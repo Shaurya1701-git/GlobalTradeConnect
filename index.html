@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalTrade Link - Connect Importers & Exporters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* A very light gray background */
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
+        }
+        .btn-primary {
+            @apply px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-transform transform hover:scale-105;
+        }
+        .btn-secondary {
+            @apply px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-75 transition-transform transform hover:scale-105;
+        }
+        .card {
+            @apply bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+        }
+        .verified-badge {
+            @apply inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+        }
+        /* Page transition styles */
+        .page {
+            display: none;
+            animation: pageFadeIn 0.4s ease-in-out;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Testimonial styles */
+        .testimonial-slide {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .testimonial-slide.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .star-rating .star {
+            color: #d1d5db; /* gray-400 */
+            cursor: pointer;
+        }
+        .star-rating .star.selected,
+        .star-rating:hover .star:hover,
+        .star-rating .star:hover ~ .star {
+            color: #f59e0b; /* amber-500 */
+        }
+        .star-rating:hover .star {
+             color: #f59e0b; /* amber-500 */
+        }
+        /* Messaging UI styles */
+        #chat-messages {
+            scroll-behavior: smooth;
+        }
+        /* Chart tooltip */
+        .chart-tooltip {
+            @apply absolute hidden bg-gray-800 text-white text-xs rounded-md py-1 px-2 pointer-events-none;
+            transform: translate(-50%, -120%);
+        }
+        /* Step connector line */
+        .step-connector, .timeline-connector {
+            @apply absolute left-4 top-4 -ml-px mt-0.5 h-full w-0.5 bg-gray-300;
+        }
+        .gemini-btn {
+             @apply flex items-center justify-center gap-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+        }
+        .suggestion-popup {
+            @apply absolute bottom-full mb-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-20;
+        }
+        .suggestion-item {
+            @apply p-2 text-sm text-left text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer;
+        }
+        input:disabled, textarea:disabled, select:disabled {
+            @apply bg-gray-100 cursor-not-allowed;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-blue-600 nav-link" data-page="home">GlobalTrade Link</a>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Auth/User Links -->
+                <div id="auth-links" class="flex items-center space-x-2">
+                    <a href="#" class="text-gray-600 hover:text-blue-600 px-4 py-2 rounded-md text-sm font-medium nav-link" data-page="login">Log In</a>
+                    <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors nav-link" data-page="signup">Sign Up</a>
+                </div>
+                <div id="user-links" class="hidden items-center">
+                     <a href="#" id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-600 transition-colors">Logout</a>
+                </div>
+                 <!-- Universal Menu Button -->
+                <div class="relative">
+                    <button id="menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg id="menu-open-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                         <svg id="menu-close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                            <div id="main-menu-links">
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="home">Home</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="suppliers">Find Suppliers</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="market-trends">Market Trends</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="logistics">Logistics</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="track-shipment">Track Shipment</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="finance">Finance & Payments</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="resources">Resources</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="contact">Contact</a>
+                            </div>
+                            <!-- User-specific links will be injected here -->
+                            <div id="user-menu-links" class="hidden border-t border-gray-100">
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="dashboard">Dashboard</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="profile">Profile</a>
+                                <a href="#" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 nav-link" role="menuitem" data-page="messages">Messages</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <!-- Hero Section -->
+            <section class="hero-gradient py-20 md:py-32">
+                <div class="container mx-auto px-6 text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">Direct Trade, Simplified.</h1>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">The global B2B marketplace connecting verified exporters with quality importers. Cut out the middlemen and grow your business with confidence.</p>
+                    <div class="mt-8 flex justify-center items-center space-x-4">
+                        <a href="#" class="btn-primary nav-link" data-page="suppliers">Find a Supplier</a>
+                        <a href="#" class="btn-secondary nav-link" data-page="post-requirement">Post Your Requirement</a>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Testimonials Section -->
+            <section class="py-20 bg-white">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-3xl font-bold text-center text-gray-900">Success Stories</h2>
+                    <p class="mt-2 text-center text-gray-600 max-w-2xl mx-auto">See how businesses like yours are thriving with GlobalTrade Link.</p>
+                    <div id="testimonial-container" class="mt-12 relative max-w-3xl mx-auto h-64 flex items-center justify-center">
+                        <!-- Testimonials will be injected here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Profile Page -->
+        <div id="profile" class="page">
+            <section class="py-20">
+                <div class="container mx-auto px-6 max-w-3xl">
+                    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Your Company Profile</h2>
+                            <button id="edit-profile-btn" class="btn-secondary text-sm py-2 px-4">Edit Profile</button>
+                        </div>
+                        <form id="profile-form" class="space-y-4">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="profile-company-name" class="block text-sm font-medium text-gray-700">Company Name</label>
+                                    <input id="profile-company-name" type="text" required disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                 <div>
+                                    <label for="profile-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                    <input id="profile-email" type="email" disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                 <div>
+                                    <label for="profile-role" class="block text-sm font-medium text-gray-700">Role</label>
+                                    <select id="profile-role" disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md">
+                                        <option value="importer">Importer</option>
+                                        <option value="exporter">Exporter</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="profile-country" class="block text-sm font-medium text-gray-700">Country</label>
+                                    <input id="profile-country" type="text" required disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                             <div>
+                                <label for="profile-website" class="block text-sm font-medium text-gray-700">Website</label>
+                                <input id="profile-website" type="url" disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md" placeholder="https://example.com">
+                            </div>
+                            <div>
+                                <label for="profile-bio" class="block text-sm font-medium text-gray-700">Company Bio</label>
+                                 <textarea id="profile-bio" rows="4" placeholder="Tell us about your company..." disabled class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+                            <div id="profile-actions" class="hidden pt-4 space-x-2">
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                                <button type="button" id="cancel-edit-btn" class="btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Resources Page -->
+        <div id="resources" class="page">
+            <section class="py-20">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold text-gray-900">Trade Resources & Insights</h2>
+                        <p class="mt-2 text-gray-600">Your knowledge hub for navigating the world of international trade.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Resource Card 1 -->
+                        <div class="card">
+                           <img class="h-48 w-full object-cover" src="https://images.unsplash.com/photo-1578575437130-5278ce68272d?auto=format&fit=crop&w=1170&q=80" alt="Shipping containers">
+                           <div class="p-5">
+                                <span class="text-xs font-semibold text-blue-600 uppercase">Logistics</span>
+                                <h5 class="text-lg font-bold tracking-tight text-gray-900 my-2">Understanding Incoterms 2025: A Guide for Importers</h5>
+                                <p class="text-sm text-gray-600 mb-3">Learn the critical differences between FOB, CIF, and EXW to optimize your shipping costs and minimize risk.</p>
+                                <a href="#" class="font-semibold text-blue-600 hover:underline text-sm">Read More &rarr;</a>
+                           </div>
+                        </div>
+                         <!-- Resource Card 2 -->
+                        <div class="card">
+                           <img class="h-48 w-full object-cover" src="https://images.unsplash.com/photo-1631106254229-392c2823d391?auto=format&fit=crop&w=1170&q=80" alt="Person signing a document">
+                           <div class="p-5">
+                                <span class="text-xs font-semibold text-blue-600 uppercase">Finance</span>
+                                <h5 class="text-lg font-bold tracking-tight text-gray-900 my-2">How to Secure Your Payments with a Letter of Credit</h5>
+                                <p class="text-sm text-gray-600 mb-3">Discover how using a Letter of Credit (LC) can protect both buyers and sellers in large international transactions.</p>
+                                <a href="#" class="font-semibold text-blue-600 hover:underline text-sm">Read More &rarr;</a>
+                           </div>
+                        </div>
+                         <!-- Resource Card 3 -->
+                        <div class="card">
+                           <img class="h-48 w-full object-cover" src="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?auto=format&fit=crop&w=800&q=80" alt="Factory inspection">
+                           <div class="p-5">
+                                <span class="text-xs font-semibold text-blue-600 uppercase">Due Diligence</span>
+                                <h5 class="text-lg font-bold tracking-tight text-gray-900 my-2">5 Red Flags to Watch for When Vetting a New Supplier</h5>
+                                <p class="text-sm text-gray-600 mb-3">Protect your business by learning how to identify potential issues before you place an order with a new overseas partner.</p>
+                                <a href="#" class="font-semibold text-blue-600 hover:underline text-sm">Read More &rarr;</a>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Logistics Page -->
+        <div id="logistics" class="page">
+            <section class="py-20 bg-white">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl font-bold text-gray-900">Streamlined Logistics & Shipping</h2>
+                        <p class="mt-2 text-gray-600 max-w-3xl mx-auto">Get your goods from factory to doorstep, hassle-free, with our integrated logistics solutions.</p>
+                    </div>
+                    <div class="grid md:grid-cols-5 gap-8 items-center">
+                        <div class="md:col-span-2">
+                           <img src="https://images.unsplash.com/photo-1613621430932-3392178c1a63?auto=format&fit=crop&w=774&q=80" class="rounded-xl shadow-lg w-full" alt="Cargo ship and airplane at a busy port">
+                        </div>
+                        <div class="md:col-span-3 bg-gray-50 p-8 rounded-xl border border-gray-200">
+                             <h3 class="text-2xl font-semibold mb-4">Freight Cost Calculator</h3>
+                             <form id="freight-calculator" class="space-y-4">
+                                 <div class="grid sm:grid-cols-2 gap-4">
+                                     <input type="text" placeholder="Origin (e.g., Mumbai, India)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                     <input type="text" placeholder="Destination (e.g., Hamburg, Germany)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                 </div>
+                                 <div class="grid sm:grid-cols-2 gap-4">
+                                     <input type="number" id="weight" placeholder="Total Weight (kg)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                     <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                         <option>Sea Freight</option>
+                                         <option>Air Freight</option>
+                                     </select>
+                                 </div>
+                                 <button type="submit" class="btn-primary w-full">Calculate Estimate</button>
+                             </form>
+                             <div id="freight-result" class="mt-4 text-center font-semibold text-lg text-gray-800 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Track Shipment Page -->
+        <div id="track-shipment" class="page">
+            <section class="py-20">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-12 max-w-2xl mx-auto">
+                        <h2 class="text-3xl font-bold text-gray-900">Track Your Shipment</h2>
+                        <p class="mt-2 text-gray-600">Enter your tracking ID below to get real-time updates on your shipment's journey.</p>
+                    </div>
+                    <div class="max-w-xl mx-auto mb-12">
+                        <form id="tracking-form" class="flex items-center gap-x-2">
+                            <input id="tracking-id-input" type="text" placeholder="Enter Tracking ID (e.g., GTL123456789)" required class="flex-grow px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit" class="btn-primary">Track</button>
+                        </form>
+                    </div>
+                    <div id="tracking-results-container" class="hidden max-w-3xl mx-auto">
+                        <!-- Tracking results will be injected here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Finance & Payments Page -->
+        <div id="finance" class="page">
+             <section class="py-20">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl font-bold text-gray-900">Secure Payments & Trade Finance</h2>
+                        <p class="mt-2 text-gray-600 max-w-3xl mx-auto">Trade with confidence using our integrated financial solutions designed to protect both buyers and sellers.</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4">How Our Escrow Service Works</h3>
+                            <div class="relative">
+                                <!-- Step 1 -->
+                                <div class="relative flex items-start mb-8">
+                                    <div class="step-connector"></div>
+                                    <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white font-bold z-10">1</div>
+                                    <div class="ml-4">
+                                        <h4 class="font-semibold">Buyer Deposits Funds</h4>
+                                        <p class="text-gray-600 text-sm">The importer securely deposits the agreed payment into GlobalTrade Link's escrow account.</p>
+                                    </div>
+                                </div>
+                                <!-- Step 2 -->
+                                <div class="relative flex items-start mb-8">
+                                    <div class="step-connector"></div>
+                                    <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white font-bold z-10">2</div>
+                                    <div class="ml-4">
+                                        <h4 class="font-semibold">Seller Ships Goods</h4>
+                                        <p class="text-gray-600 text-sm">We verify the payment and notify the exporter, who then ships the goods and provides tracking information.</p>
+                                    </div>
+                                </div>
+                                <!-- Step 3 -->
+                                <div class="relative flex items-start">
+                                    <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white font-bold z-10">3</div>
+                                    <div class="ml-4">
+                                        <h4 class="font-semibold">Buyer Confirms Receipt</h4>
+                                        <p class="text-gray-600 text-sm">The importer confirms the goods have been received as described. Funds are then released to the exporter.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                            <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb18?auto=format&fit=crop&w=1170&q=80" alt="Digital lock over a financial document" class="rounded-lg mb-6 w-full h-48 object-cover">
+                            <h4 class="text-xl font-semibold mb-2">Need Trade Financing?</h4>
+                            <p class="text-gray-600 mb-4">We've partnered with leading financial institutions to offer solutions like Letters of Credit and invoice financing to help you manage cash flow and scale your operations.</p>
+                            <a href="#" class="btn-secondary w-full text-center">Learn More</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Accepted Payment Methods Section -->
+                    <div class="mt-16 text-center">
+                        <h3 class="text-2xl font-semibold mb-4">Accepted Payment Methods</h3>
+                        <p class="text-gray-600 mb-8 max-w-2xl mx-auto">We support a variety of secure payment options for funding your escrow account, ensuring a smooth and reliable transaction process.</p>
+                        <div class="flex justify-center items-start gap-x-6 md:gap-x-8 flex-wrap">
+                            <!-- Cards -->
+                            <div class="flex flex-col items-center space-y-2 text-center w-28 mb-4">
+                                <div class="p-3 w-full h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-700">Credit/Debit Card</p>
+                            </div>
+                            <!-- Net Banking -->
+                            <div class="flex flex-col items-center space-y-2 text-center w-28 mb-4">
+                                <div class="p-3 w-full h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-8 w-8 text-gray-600">
+                                        <path d="M2 4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Z" />
+                                        <path d="M2 10a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10Z" />
+                                        <path d="M10.25 15.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM13.75 15.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" />
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-700">Net Banking</p>
+                            </div>
+                            <!-- UPI -->
+                            <div class="flex flex-col items-center space-y-2 text-center w-28 mb-4">
+                                <div class="p-3 w-full h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-auto" viewBox="0 0 256 256"><defs/><path fill="#F9A01B" d="M128 241.6c-62.7 0-113.6-50.9-113.6-113.6S65.3 14.4 128 14.4s113.6 50.9 113.6 113.6-50.9 113.6-113.6 113.6z"/><path fill="#E65225" d="M192.5 106.8c-1.8-21.7-19.8-38.3-42.3-38.3h-44.3v76.6z"/><path fill="#fff" d="M105.9 106.9v38.3h44.3c22.5 0 40.5-16.6 42.3-38.3z"/><path fill="#00A2DF" d="M192.5 145.1c-1.8 21.7-19.8 38.3-42.3 38.3h-44.3v-76.6z"/><path fill="#64AE3F" d="M105.9 145.2v-38.3h44.3c22.5 0 40.5 16.6 42.3 38.3z"/></svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-700">UPI</p>
+                            </div>
+                             <!-- PayPal -->
+                            <div class="flex flex-col items-center space-y-2 text-center w-28 mb-4">
+                                <div class="p-3 w-full h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+                                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="h-8 w-auto text-[#0070BA]"><title>PayPal</title><path d="M7.835 21.36c4.954 0 7.42-3.197 7.42-3.197-.042-2.91-1.84-4.88-1.84-4.88-2.18 1.442-2.55 1.703-4.143 1.703h-1.39l.643-4.13L11.397 0H4.66L.001 24h6.588l1.246-2.64z"/></svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-700">PayPal</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Find Suppliers Page -->
+        <div id="suppliers" class="page">
+            <section class="py-20">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold text-gray-900">Find Verified Suppliers</h2>
+                        <p class="mt-2 text-gray-600">Browse listings from trusted exporters around the world.</p>
+                    </div>
+                    <div class="mb-8 p-4 bg-white rounded-lg shadow-sm border border-gray-200 grid md:grid-cols-4 gap-4 items-center">
+                        <input id="searchInput" type="text" placeholder="Search by product..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-1">
+                        <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">All Categories</option>
+                        </select>
+                        <select id="countryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">All Countries</option>
+                        </select>
+                         <select id="sortFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="rating">Sort by: Best Rating</option>
+                            <option value="name_asc">Sort by: Name (A-Z)</option>
+                            <option value="name_desc">Sort by: Name (Z-A)</option>
+                        </select>
+                    </div>
+                    <div id="listingsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+                    <p id="noResults" class="hidden text-center text-gray-500 mt-8">No suppliers found matching your criteria.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Supplier Detail Page -->
+        <div id="supplier-detail" class="page">
+            <section class="py-20 bg-white">
+                <div id="supplier-detail-content" class="container mx-auto px-6">
+                    <!-- Dynamic content will be injected here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Market Trends Page -->
+        <div id="market-trends" class="page">
+            <section class="py-20">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold text-gray-900">Global Trade Market Trends</h2>
+                        <p class="mt-2 text-gray-600">Actionable insights to inform your trading strategy. Data as of September 2025.</p>
+                    </div>
+
+                    <!-- Price Trend Chart -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-12">
+                        <h3 class="text-xl font-semibold mb-4">Price Trend: Organic Arabica Coffee Beans (USD/kg)</h3>
+                        <div id="price-chart-container" class="relative">
+                            <!-- Chart will be rendered here by JS -->
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <!-- Top Traded Goods Table -->
+                        <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            <h3 class="text-xl font-semibold mb-4">Top Traded Commodities</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">Product</th>
+                                            <th scope="col" class="px-6 py-3">Avg. Price</th>
+                                            <th scope="col" class="px-6 py-3">30d Change</th>
+                                            <th scope="col" class="px-6 py-3">Demand</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="market-data-table">
+                                        <!-- Data will be rendered here by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Market Insights -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            <h3 class="text-xl font-semibold mb-4">Market Insights</h3>
+                            <div class="space-y-4 text-gray-600">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Agricultural Sector Strong</p>
+                                    <p class="text-sm">Demand for organic products like coffee and spices from India continues to see robust growth in European markets.</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Metal Prices Volatile</p>
+                                    <p class="text-sm">Copper prices are experiencing volatility due to shifting industrial demand and supply chain adjustments in Chile.</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Textile Market Steady</p>
+                                    <p class="text-sm">The market for high-quality, artisanal textiles from Italy remains stable, with consistent interest from boutique importers.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Messages Page -->
+        <div id="messages" class="page">
+            <section class="py-12">
+                <div class="container mx-auto px-6">
+                    <h1 class="text-3xl font-bold mb-6">Your Messages</h1>
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden h-[70vh] flex">
+                        <div class="w-1/3 border-r border-gray-200 flex flex-col">
+                            <div class="p-4 border-b border-gray-200"><h2 class="text-lg font-semibold">Conversations</h2></div>
+                            <div id="conversations-list" class="overflow-y-auto flex-grow"></div>
+                        </div>
+                        <div id="chat-window" class="w-2/3 flex flex-col">
+                           <!-- Chat content will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Contact Page -->
+        <div id="contact" class="page">
+            <section class="bg-white py-20">
+                <div class="container mx-auto px-6 text-center">
+                    <h2 class="text-3xl font-bold text-gray-900">Get In Touch</h2>
+                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Have a question or need support? We're here to help you succeed in global trade.</p>
+                    <div class="mt-8 max-w-xl mx-auto"><form class="space-y-4"><input type="text" placeholder="Your Name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><input type="email" placeholder="Your Email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><textarea placeholder="Your Message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea><button type="submit" class="btn-primary w-full">Send Message</button></form></div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Login Page -->
+        <div id="login" class="page"><section class="py-20"><div class="container mx-auto px-6 max-w-md"><div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200"><h2 class="text-2xl font-bold text-center mb-6">Log In to Your Account</h2><form id="login-form" class="space-y-4"><input id="login-email" type="email" placeholder="Email Address" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="importer@trade.com"><input type="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="password123"><button type="submit" class="btn-primary w-full">Log In</button><p class="text-sm text-center text-gray-600">Don't have an account? <a href="#" class="font-medium text-blue-600 hover:underline nav-link" data-page="signup">Sign up</a></p></form></div></div></section></div>
+        <!-- Sign Up Page -->
+        <div id="signup" class="page"><section class="py-20"><div class="container mx-auto px-6 max-w-md"><div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200"><h2 class="text-2xl font-bold text-center mb-6">Create an Account</h2><form class="space-y-4"><input type="text" placeholder="Company Name" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><input type="email" placeholder="Email Address" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><input type="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><select required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="" disabled selected>I am an...</option><option value="exporter">Exporter</option><option value="importer">Importer</option></select><button type="submit" class="btn-primary w-full">Create Account</button><p class="text-sm text-center text-gray-600">Already have an account? <a href="#" class="font-medium text-blue-600 hover:underline nav-link" data-page="login">Log in</a></p></form></div></div></section></div>
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page"><section class="py-20"><div class="container mx-auto px-6"><h1 class="text-3xl font-bold mb-6">Welcome, <span id="company-name-placeholder">[Company Name]</span>!</h1><div class="grid md:grid-cols-3 gap-8"><div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm border"><h2 class="text-xl font-semibold mb-4">Your Profile</h2><p class="text-gray-600">Update your company information and manage verification status.</p><button class="mt-4 btn-secondary w-full nav-link" data-page="profile">Edit Profile</button></div><div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm border"><h2 class="text-xl font-semibold mb-4">Your Activity</h2><p class="text-gray-600">This is where your active listings, requirements, and messages will appear.</p><div class="mt-4 p-4 border rounded-lg bg-gray-50 text-center text-gray-500">No active listings yet.</div></div></div></div></section></div>
+        
+        <!-- Post Requirement Page -->
+        <div id="post-requirement" class="page">
+             <section class="py-20">
+                <div class="container mx-auto px-6 max-w-2xl">
+                    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                        <h2 class="text-2xl font-bold text-center mb-6">Post Your Requirement</h2>
+                        <p class="text-center text-gray-600 mb-6">Let verified suppliers find you. Fill out the details of the product you need.</p>
+                        <form id="post-requirement-form" class="space-y-4">
+                            <input id="rfq-product-name" type="text" placeholder="Product Name (e.g., Arabica Coffee Beans)" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" placeholder="Quantity Needed (e.g., 20 Tons)" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div>
+                               <textarea id="rfq-specifications" placeholder="Detailed Specifications (quality, grade, certifications, etc.)" rows="5" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                               <div class="text-right mt-2">
+                                    <button type="button" id="generate-specs-btn" class="gemini-btn text-sm">
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.456-2.456L12.5 18l1.178-.398a3.375 3.375 0 002.456-2.456L16.5 14.25l.398 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg>
+                                        <span>Generate Specifications with AI</span>
+                                    </button>
+                               </div>
+                            </div>
+                            <button type="submit" class="btn-primary w-full">Submit RFQ</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white"><div class="container mx-auto px-6 py-12"><div class="grid md:grid-cols-4 gap-8"><div><h3 class="text-lg font-semibold">GlobalTrade Link</h3><p class="mt-2 text-gray-400 text-sm">Connecting businesses, enabling growth.</p></div><div><h4 class="font-semibold">Quick Links</h4><ul class="mt-2 space-y-2"><li><a href="#" class="text-gray-400 hover:text-white text-sm nav-link" data-page="home">Home</a></li><li><a href="#" class="text-gray-400 hover:text-white text-sm nav-link" data-page="suppliers">Find Suppliers</a></li><li><a href="#" class="text-gray-400 hover:text-white text-sm nav-link" data-page="resources">Resources</a></li></ul></div><div><h4 class="font-semibold">Legal</h4><ul class="mt-2 space-y-2"><li><a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a></li><li><a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a></li></ul></div><div><h4 class="font-semibold">Contact</h4><ul class="mt-2 space-y-2"><li><a href="#" class="text-gray-400 hover:text-white text-sm">support@globaltrade.link</a></li><li><p class="text-gray-400 text-sm">Pune, Maharashtra, India</p></li></ul></div></div><div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-500 text-sm">&copy; 2025 GlobalTrade Link. All Rights Reserved.</div></div></footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-5 right-5 hidden btn-primary !p-3 !rounded-full shadow-lg z-50 transition-opacity duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- MOCK DATA ---
+    const CURRENT_USER_ID = 99; // Mocking the logged-in user as an importer
+    let currentUserName = "Importer Inc.";
+
+    const mockSuppliers = [
+        { id: 1, name: 'Organic Arabica Coffee Beans', supplier: 'Colombian Bean Co.', country: 'Colombia', category: 'Agriculture', moq: '1 Ton', verified: true, imageUrl: 'https://images.unsplash.com/photo-1559734913-396c98703e60?auto=format&fit=crop&w=870&q=80', rating: 4.8, reviewCount: 28, reviews: [{user: 'Global Imports', rating: 5, comment: 'Excellent quality and fast shipping. Highly recommended.'}, {user: 'Euro Traders', rating: 4, comment: 'Good product, but communication could be better.'}] },
+        { id: 2, name: 'Premium Basmati Rice', supplier: 'Himalayan Grains', country: 'India', category: 'Agriculture', moq: '20 Tons', verified: true, imageUrl: 'https://images.unsplash.com/photo-1586201375765-c124a2736c44?auto=format&fit=crop&w=774&q=80', rating: 4.5, reviewCount: 15, reviews: [] },
+        { id: 3, name: 'Handcrafted Leather Wallets', supplier: 'Artisan Crafts', country: 'Italy', category: 'Textiles & Apparel', moq: '500 Units', verified: false, imageUrl: 'https://images.unsplash.com/photo-1619119430132-9a4a23363e72?auto=format&fit=crop&w=870&q=80', rating: 4.2, reviewCount: 9, reviews: [] },
+        { id: 4, name: 'High-Purity Copper Cathode', supplier: 'Andes Mining Corp', country: 'Chile', category: 'Metals & Minerals', moq: '100 Tons', verified: true, imageUrl: 'https://images.unsplash.com/photo-1612809854784-29f7961200a8?auto=format&fit=crop&w=774&q=80', rating: 5.0, reviewCount: 7, reviews: [] },
+        { id: 5, name: 'Organic Turmeric Powder', supplier: 'Spices of India', country: 'India', category: 'Spices', moq: '5 Tons', verified: true, imageUrl: 'https://images.unsplash.com/photo-1587598282432-5192911933ab?auto=format&fit=crop&w=800&q=80', rating: 4.7, reviewCount: 22, reviews: [] },
+        { id: 6, name: 'Precision Auto Parts', supplier: 'Technik Auto', country: 'Germany', category: 'Automotive', moq: '1,000 Units', verified: true, imageUrl: 'https://images.unsplash.com/photo-1553775282-20af807797a2?auto=format&fit=crop&w=870&q=80', rating: 4.9, reviewCount: 41, reviews: [] },
+        { id: 7, name: 'Vietnamese Robusta Coffee', supplier: 'Saigon Roast', country: 'Vietnam', category: 'Agriculture', moq: '5 Tons', verified: true, imageUrl: 'https://images.unsplash.com/photo-1600320254374-ce2d293c324e?auto=format&fit=crop&w=774&q=80', rating: 4.6, reviewCount: 18, reviews: [] },
+        { id: 8, name: 'Medical Grade Surgical Masks', supplier: 'SafeMed Supplies', country: 'China', category: 'Medical Supplies', moq: '100,000 Units', verified: false, imageUrl: 'https://images.unsplash.com/photo-1584432247990-2c7b5a8c962b?auto=format&fit=crop&w=870&q=80', rating: 3.9, reviewCount: 5, reviews: [] },
+    ];
+
+    const mockTestimonials = [
+        { quote: "Finding a verified supplier for our coffee beans used to be a nightmare. GlobalTrade Link made it simple and secure. We've increased our profit margins by 15%!", author: "Maria Garcia", company: "The Daily Grind Cafe, Spain", image: "https://images.unsplash.com/photo-1579038773867-044c48829161?auto=format&fit=crop&w=256&q=80" },
+        { quote: "The escrow payment system gave us the confidence to place a large order for textiles from a new supplier in India. Everything went smoothly from start to finish.", author: "David Chen", company: "Chen Fashion Imports, USA", image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=256&q=80" },
+        { quote: "As an exporter, this platform has opened up new markets for our handcrafted goods. The quality of importers is excellent, and the messaging system makes communication easy.", author: "Fatima Al-Jamil", company: "Moroccan Artistry, Morocco", image: "https://images.unsplash.com/photo-1541647376583-8934c3448ce6?auto=format&fit=crop&w=256&q=80" }
+    ];
+
+    let mockConversations = [
+        { id: 101, participants: [CURRENT_USER_ID, 1], messages: [{ senderId: 1, text: "Hello! Thank you for your interest in our Organic Arabica Coffee Beans. How can I help you?", timestamp: new Date('2025-09-18T14:30:00') }, { senderId: CURRENT_USER_ID, text: "Hi, I'd like to inquire about pricing for a 5-ton shipment.", timestamp: new Date('2025-09-18T14:32:00') }] },
+        { id: 102, participants: [CURRENT_USER_ID, 6], messages: [{ senderId: 6, text: "Following up on your request for precision auto parts.", timestamp: new Date('2025-09-19T10:05:00') }] }
+    ];
+
+    const mockPriceTrends = {
+        product: 'Organic Arabica Coffee Beans',
+        data: [
+            { month: 'Oct 24', price: 8.50 }, { month: 'Nov 24', price: 8.75 }, { month: 'Dec 24', price: 8.65 },
+            { month: 'Jan 25', price: 8.90 }, { month: 'Feb 25', price: 9.10 }, { month: 'Mar 25', price: 9.05 },
+            { month: 'Apr 25', price: 9.25 }, { month: 'May 25', price: 9.40 }, { month: 'Jun 25', price: 9.30 },
+            { month: 'Jul 25', price: 9.55 }, { month: 'Aug 25', price: 9.60 }, { month: 'Sep 25', price: 9.75 }
+        ]
+    };
+
+    const mockMarketData = [
+        { name: 'Basmati Rice', avgPrice: '$1250/Ton', change: 1.5, demand: 'High' },
+        { name: 'Copper Cathode', avgPrice: '$8200/Ton', change: -2.1, demand: 'Medium' },
+        { name: 'Leather Goods', avgPrice: '$45/unit', change: 0.5, demand: 'Stable' },
+        { name: 'Turmeric Powder', avgPrice: '$2.80/kg', change: 3.2, demand: 'High' },
+        { name: 'Auto Parts', avgPrice: '$150/unit', change: 0.2, demand: 'Stable' }
+    ];
+
+    const mockTrackingData = {
+        "GTL123456789": {
+            from: "Mumbai, India",
+            to: "Hamburg, Germany",
+            status: "Delivered",
+            timeline: [
+                { status: "Order Confirmed", location: "Mumbai, India", timestamp: new Date('2025-09-10T11:00:00Z') },
+                { status: "Picked Up by Carrier", location: "Mumbai, India", timestamp: new Date('2025-09-11T16:30:00Z') },
+                { status: "Departed from Port", location: "Nhava Sheva Port, India", timestamp: new Date('2025-09-13T08:00:00Z') },
+                { status: "In Transit", location: "Arabian Sea", timestamp: new Date('2025-09-15T12:00:00Z') },
+                { status: "Arrived at Port", location: "Port of Hamburg, Germany", timestamp: new Date('2025-09-18T18:45:00Z') },
+                { status: "Out for Delivery", location: "Hamburg, Germany", timestamp: new Date('2025-09-19T09:00:00Z') },
+                { status: "Delivered", location: "Hamburg, Germany", timestamp: new Date() } // Use current time for "today"
+            ]
+        }
+    };
+
+    // --- DOM ELEMENT REFERENCES ---
+    const pages = document.querySelectorAll('.page');
+    const navLinks = document.querySelectorAll('.nav-link');
+    // Auth
+    const authLinks = document.getElementById('auth-links');
+    const userLinks = document.getElementById('user-links');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const companyNamePlaceholder = document.getElementById('company-name-placeholder');
+    // Menu
+    const menuButton = document.getElementById('menu-button');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const userMenuLinks = document.getElementById('user-menu-links');
+    const menuOpenIcon = document.getElementById('menu-open-icon');
+    const menuCloseIcon = document.getElementById('menu-close-icon');
+    // Home Page
+    const testimonialContainer = document.getElementById('testimonial-container');
+    // Suppliers Page
+    const listingsGrid = document.getElementById('listingsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const countryFilter = document.getElementById('countryFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    const noResults = document.getElementById('noResults');
+    // Supplier Detail Page
+    const supplierDetailContent = document.getElementById('supplier-detail-content');
+    // Profile Page
+    const profileForm = document.getElementById('profile-form');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const profileActions = document.getElementById('profile-actions');
+    const profileInputs = profileForm.querySelectorAll('input, select, textarea');
+    // Messaging
+    const conversationsList = document.getElementById('conversations-list');
+    const chatWindow = document.getElementById('chat-window');
+    // Market Trends
+    const priceChartContainer = document.getElementById('price-chart-container');
+    const marketDataTable = document.getElementById('market-data-table');
+    // Logistics
+    const freightCalculator = document.getElementById('freight-calculator');
+    const freightResult = document.getElementById('freight-result');
+    // RFQ
+    const generateSpecsBtn = document.getElementById('generate-specs-btn');
+    const rfqProductName = document.getElementById('rfq-product-name');
+    const rfqSpecifications = document.getElementById('rfq-specifications');
+    // Tracking
+    const trackingForm = document.getElementById('tracking-form');
+    const trackingIdInput = document.getElementById('tracking-id-input');
+    const trackingResultsContainer = document.getElementById('tracking-results-container');
+    // Global
+    const backToTopBtn = document.getElementById('back-to-top');
+
+    let isLoggedIn = false;
+    let isEditMode = false;
+    let originalProfileData = {};
+
+    // --- GEMINI API INTEGRATION ---
+    const API_MODEL = "gemini-2.5-flash-preview-05-20";
+    const API_KEY = ""; // Kept empty as per instructions
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=${API_KEY}`;
+    
+    async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
+        const payload = { contents: [{ parts: [{ text: prompt }] }] };
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) return candidate.content.parts[0].text;
+                else throw new Error('Invalid response structure from API.');
+            } catch (error) {
+                console.warn(`API call attempt ${i + 1} failed. Retrying in ${delay}ms...`, error);
+                if (i === retries - 1) {
+                    console.error("API call failed after multiple retries.", error);
+                    return null;
+                }
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2;
+            }
+        }
+        return null;
+    }
+
+    // --- FEATURE: RFQ Assistant ---
+    generateSpecsBtn.addEventListener('click', async () => {
+        const productName = rfqProductName.value.trim();
+        if (!productName) {
+            alert("Please enter a product name first.");
+            return;
+        }
+        generateSpecsBtn.disabled = true;
+        generateSpecsBtn.innerHTML = `<svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Generating...</span>`;
+        const prompt = `Act as a professional sourcing agent. A user wants to create a Request for Quotation (RFQ) for the following product: "${productName}". Generate a clear, professional, and detailed list of specifications they should include in their RFQ. Use bullet points for clarity. The specifications should cover aspects like material, quality, dimensions, certifications, and packaging. Do not add any introductory or concluding sentences, just provide the list.`;
+        const generatedSpecs = await callGeminiAPI(prompt);
+        if (generatedSpecs) {
+            rfqSpecifications.value = generatedSpecs.replace(/•/g, '-');
+        } else {
+            alert("Sorry, we couldn't generate specifications at this time. Please try again later.");
+        }
+        generateSpecsBtn.disabled = false;
+        generateSpecsBtn.innerHTML = `<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.456-2.456L12.5 18l1.178-.398a3.375 3.375 0 002.456-2.456L16.5 14.25l.398 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg><span>Generate Specifications with AI</span>`;
+    });
+
+    // --- FEATURE: Shipping Tracker ---
+    trackingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const trackingId = trackingIdInput.value.trim().toUpperCase();
+        const shipmentData = mockTrackingData[trackingId];
+        trackingResultsContainer.innerHTML = '';
+        trackingResultsContainer.classList.add('hidden');
+        if (shipmentData) {
+            displayTrackingResults(trackingId, shipmentData);
+        } else {
+            trackingResultsContainer.innerHTML = `<p class="text-center text-red-600">Tracking ID not found. Please check the number and try again.</p>`;
+        }
+        trackingResultsContainer.classList.remove('hidden');
+    });
+
+    function displayTrackingResults(trackingId, data) {
+        const finalStatus = data.timeline[data.timeline.length - 1];
+        const statusColor = finalStatus.status === 'Delivered' ? 'text-green-600' : 'text-blue-600';
+        let timelineHtml = data.timeline.slice().reverse().map((event, index) => {
+            const isLast = index === data.timeline.length - 1;
+            const isFirst = index === 0;
+            const dotColor = isFirst ? 'bg-blue-600' : 'bg-gray-300';
+            const textColor = isFirst ? 'text-gray-800' : 'text-gray-500';
+            return `<div class="relative flex items-start">${!isLast ? `<div class="timeline-connector"></div>` : ''}<div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full ${dotColor} z-10"><svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></div><div class="ml-4 ${textColor}"><h4 class="font-semibold">${event.status}</h4><p class="text-sm">${event.location}</p><p class="text-xs mt-1">${formatTimestamp(event.timestamp)}</p></div></div>`;
+        }).join('');
+        trackingResultsContainer.innerHTML = `<div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200"><div class="grid sm:grid-cols-3 gap-4 text-center sm:text-left mb-6 pb-6 border-b"><div><p class="text-sm text-gray-500">Tracking ID</p><p class="font-semibold text-gray-800">${trackingId}</p></div><div><p class="text-sm text-gray-500">From &rarr; To</p><p class="font-semibold text-gray-800">${data.from} &rarr; ${data.to}</p></div><div><p class="text-sm text-gray-500">Current Status</p><p class="font-bold ${statusColor}">${finalStatus.status}</p></div></div><div class="space-y-8">${timelineHtml}</div></div>`;
+    }
+
+    // --- PAGE NAVIGATION ---
+    function showPage(pageId) {
+        pages.forEach(page => page.classList.toggle('active', page.id === pageId));
+        window.scrollTo(0, 0);
+        if (pageId === 'market-trends') renderMarketTrendsPage();
+        if (pageId === 'profile') {
+            originalProfileData = {
+                companyName: currentUserName,
+                email: 'importer@trade.com',
+                role: 'importer',
+                country: 'Germany',
+                website: 'https://importer-inc.com',
+                bio: 'We are a leading importer of high-quality agricultural goods based in Germany, specializing in coffee and spices.'
+            };
+            populateProfileForm(originalProfileData);
+            toggleEditMode(false);
+        }
+    }
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pageId = link.getAttribute('data-page');
+            if (pageId) showPage(pageId);
+            if (!dropdownMenu.classList.contains('hidden')) {
+                dropdownMenu.classList.add('hidden');
+                menuOpenIcon.classList.remove('hidden');
+                menuCloseIcon.classList.add('hidden');
+            }
+        });
+    });
+
+    // --- AUTH MOCK ---
+    function handleLogout(e) {
+        e.preventDefault();
+        isLoggedIn = false;
+        updateAuthUI();
+        showPage('home');
+    }
+    function updateAuthUI() {
+        authLinks?.classList.toggle('hidden', isLoggedIn);
+        if (userLinks) {
+            userLinks.classList.toggle('hidden', !isLoggedIn);
+            userLinks.classList.toggle('flex', isLoggedIn);
+        }
+        userMenuLinks?.classList.toggle('hidden', !isLoggedIn);
+    }
+
+    // Login (mock) - attach only if element exists
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            isLoggedIn = true;
+            // Attempt to extract a friendly name from the email input
+            const emailInput = document.getElementById('login-email');
+            if (emailInput && emailInput.value) {
+                const namePart = emailInput.value.split('@')[0];
+                currentUserName = namePart ? namePart.replace(/[._\-0-9]/g, ' ').trim() : currentUserName;
+            }
+            if (companyNamePlaceholder) companyNamePlaceholder.textContent = currentUserName;
+            updateAuthUI();
+            showPage('dashboard');
+        });
+    }
+
+    // Logout button
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+    // Menu toggle (defensive)
+    if (menuButton) {
+        menuButton.addEventListener('click', () => {
+            if (!dropdownMenu || !menuOpenIcon || !menuCloseIcon) return;
+            dropdownMenu.classList.toggle('hidden');
+            menuOpenIcon.classList.toggle('hidden');
+            menuCloseIcon.classList.toggle('hidden');
+        });
+    }
+
+    // --- LISTINGS RENDERING & FILTERS ---
+    function populateFilters() {
+        if (!categoryFilter || !countryFilter) return;
+        const categories = [...new Set(mockSuppliers.map(s => s.category))].sort();
+        const countries = [...new Set(mockSuppliers.map(s => s.country))].sort();
+        categories.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; categoryFilter.appendChild(opt); });
+        countries.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; countryFilter.appendChild(opt); });
+    }
+
+    function renderListings(list = mockSuppliers) {
+        if (!listingsGrid) return;
+        listingsGrid.innerHTML = '';
+        list.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'card p-0 overflow-hidden';
+            card.innerHTML = `
+                <img src="${s.imageUrl}" alt="${escapeHtml(s.name)}" class="w-full h-40 object-cover">
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900">${escapeHtml(s.name)}</h3>
+                    <p class="text-sm text-gray-600">${escapeHtml(s.supplier)} • ${escapeHtml(s.country)}</p>
+                    <p class="mt-3 text-sm text-gray-700">MOQ: ${escapeHtml(s.moq)}</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="text-sm font-semibold">${s.rating}</div>
+                            <div class="text-xs text-gray-500">(${s.reviewCount})</div>
+                        </div>
+                        <button data-id="${s.id}" class="view-supplier-btn btn-secondary text-sm">View</button>
+                    </div>
+                </div>`;
+            listingsGrid.appendChild(card);
+        });
+        document.querySelectorAll('.view-supplier-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            const id = Number(e.currentTarget.dataset.id);
+            showSupplierDetail(id);
+        }));
+    }
+
+    function filterAndRender() {
+        let filtered = mockSuppliers.slice();
+        const q = (searchInput?.value || '').trim().toLowerCase();
+        if (q) filtered = filtered.filter(s => (s.name + ' ' + s.supplier + ' ' + s.country + ' ' + s.category).toLowerCase().includes(q));
+        if (categoryFilter && categoryFilter.value) filtered = filtered.filter(s => s.category === categoryFilter.value);
+        if (countryFilter && countryFilter.value) filtered = filtered.filter(s => s.country === countryFilter.value);
+        if (sortFilter && sortFilter.value) {
+            if (sortFilter.value === 'name_asc') filtered.sort((a,b)=> a.supplier.localeCompare(b.supplier));
+            if (sortFilter.value === 'name_desc') filtered.sort((a,b)=> b.supplier.localeCompare(a.supplier));
+            if (sortFilter.value === 'rating') filtered.sort((a,b)=> b.rating - a.rating);
+        }
+        noResults?.classList.toggle('hidden', filtered.length > 0);
+        renderListings(filtered);
+    }
+
+    if (searchInput) searchInput.addEventListener('input', debounce(filterAndRender, 200));
+    if (categoryFilter) categoryFilter.addEventListener('change', filterAndRender);
+    if (countryFilter) countryFilter.addEventListener('change', filterAndRender);
+    if (sortFilter) sortFilter.addEventListener('change', filterAndRender);
+
+    function showSupplierDetail(id) {
+        const s = mockSuppliers.find(x => x.id === id);
+        if (!s || !supplierDetailContent) return;
+        supplierDetailContent.innerHTML = `
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <div class="flex gap-6">
+                    <img src="${s.imageUrl}" class="w-48 h-48 object-cover rounded-lg" alt="${escapeHtml(s.supplier)}">
+                    <div>
+                        <h2 class="text-2xl font-bold">${escapeHtml(s.supplier)}</h2>
+                        <p class="text-sm text-gray-600 mt-1">${escapeHtml(s.country)} • ${escapeHtml(s.category)}</p>
+                        <p class="mt-4 text-gray-700">MOQ: ${escapeHtml(s.moq)}</p>
+                        <p class="mt-4 text-gray-600">${escapeHtml(s.reviews?.[0]?.comment || '')}</p>
+                        <div class="mt-6"><button class="btn-primary" onclick="(function(){ showPage('suppliers'); })()">Back to listings</button></div>
+                    </div>
+                </div>
+            </div>`;
+        showPage('supplier-detail');
+    }
+
+    // --- PROFILE FORM HELPERS ---
+    function populateProfileForm(data) {
+        if (!profileForm) return;
+        profileForm.querySelector('#profile-company-name').value = data.companyName || '';
+        profileForm.querySelector('#profile-email').value = data.email || '';
+        profileForm.querySelector('#profile-role').value = data.role || 'importer';
+        profileForm.querySelector('#profile-country').value = data.country || '';
+        profileForm.querySelector('#profile-website').value = data.website || '';
+        profileForm.querySelector('#profile-bio').value = data.bio || '';
+    }
+
+    function toggleEditMode(enable) {
+        if (!profileForm) return;
+        isEditMode = !!enable;
+        profileInputs.forEach(i => i.disabled = !isEditMode);
+        profileActions.classList.toggle('hidden', !isEditMode);
+    }
+
+    editProfileBtn?.addEventListener('click', (e) => { e.preventDefault(); toggleEditMode(true); });
+    cancelEditBtn?.addEventListener('click', (e) => { e.preventDefault(); toggleEditMode(false); populateProfileForm(originalProfileData); });
+    if (profileForm) profileForm.addEventListener('submit', (e) => { e.preventDefault(); originalProfileData = {
+        companyName: profileForm.querySelector('#profile-company-name').value,
+        email: profileForm.querySelector('#profile-email').value,
+        role: profileForm.querySelector('#profile-role').value,
+        country: profileForm.querySelector('#profile-country').value,
+        website: profileForm.querySelector('#profile-website').value,
+        bio: profileForm.querySelector('#profile-bio').value
+    }; toggleEditMode(false); alert('Profile saved (mock)'); });
+
+    // --- FREIGHT CALCULATOR ---
+    if (freightCalculator) {
+        freightCalculator.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const weight = Number(document.getElementById('weight')?.value || 0);
+            if (!weight || weight <= 0) { freightResult.textContent = 'Enter a valid weight.'; freightResult.classList.remove('hidden'); return; }
+            const estimated = (weight * 0.85).toFixed(2);
+            freightResult.textContent = `Estimated freight cost: $${estimated}`;
+            freightResult.classList.remove('hidden');
+        });
+    }
+
+    // --- TESTIMONIALS CAROUSEL ---
+    function renderTestimonials() {
+        if (!testimonialContainer) return;
+        testimonialContainer.innerHTML = '';
+        mockTestimonials.forEach((t, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'testimonial-slide text-center p-6';
+            slide.innerHTML = `<img src="${t.image}" class="w-16 h-16 rounded-full mx-auto mb-4" alt="${escapeHtml(t.author)}"><blockquote class="text-lg italic">"${escapeHtml(t.quote)}"</blockquote><p class="mt-3 font-semibold">${escapeHtml(t.author)}</p><p class="text-sm text-gray-500">${escapeHtml(t.company)}</p>`;
+            testimonialContainer.appendChild(slide);
+        });
+        let idx = 0;
+        const slides = testimonialContainer.querySelectorAll('.testimonial-slide');
+        function show(i) { slides.forEach((s, j) => s.classList.toggle('active', i === j)); }
+        if (slides.length) { show(0); setInterval(() => { idx = (idx + 1) % slides.length; show(idx); }, 4500); }
+    }
+
+    // --- UTILITIES ---
+    function formatTimestamp(ts) { return new Date(ts).toLocaleString(); }
+    function debounce(fn, wait){ let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), wait); }; }
+    function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[s]); }
+
+    // --- BACK TO TOP ---
+    window.addEventListener('scroll', () => {
+        if (!backToTopBtn) return;
+        if (window.scrollY > 600) backToTopBtn.classList.remove('hidden'); else backToTopBtn.classList.add('hidden');
+    });
+    backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // --- INIT ---
+    populateFilters();
+    renderListings();
+    renderTestimonials();
+    showPage('home');
+
+    // End of DOMContentLoaded
+});
+</script>
+</body>
+</html>
